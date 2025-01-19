@@ -4,10 +4,10 @@
 class Board
 {
 	const int windowSize = 800;
-	const int gridSize = 5;
-	const int cellSize = (windowSize / gridSize)/2;
+	int gridSize = 10;
+	int cellSize = (windowSize / gridSize)/2;
 	const int offSet = 100;
-	const int howManyToWin = 3;
+	const int howManyToWin = 5;
 	static const sf::Color BLACK;
 	
 	std::vector<std::vector<int>> grid;
@@ -24,6 +24,9 @@ public:
 	int WinCheck();
 	bool checkAround(int x, int y, int choice);
 	bool isOnBoard(int x, int y);
+	int getHowManyToWin();
+	void clearTile(int x, int y);
+	void setGridSize(int size);
 
 	
 };

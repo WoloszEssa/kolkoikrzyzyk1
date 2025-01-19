@@ -15,6 +15,9 @@ public:
 	bool isOnBoard(int x, int y);
 	void handleBotAttack();
 	void drawEndGame(sf::RenderWindow& window);
-	void drawStartGame(sf::RenderWindow& window);
+	void drawStartGame(sf::RenderWindow& window, int licznikEkranow);
+	bool botCanWin(int x, int y, int choice);
+	bool playerCanWin(int x, int y, int choice);
+	void botTileNextToPlayer(int x, int y, int choice);
 };
 

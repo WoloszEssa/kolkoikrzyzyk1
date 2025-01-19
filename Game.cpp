@@ -9,6 +9,7 @@ Game::Game()
 
 void Game::run()
 {
+    int licznik = 0;
     sf::RenderWindow window(sf::VideoMode(600, 600), "KolkoKrzyzyk By Mikolaj Wolos", sf::Style::Titlebar | sf::Style::Close);
     while (window.isOpen())
     {
@@ -27,21 +28,49 @@ void Game::run()
                     int mouseX = event.mouseButton.x;
                     int mouseY = event.mouseButton.y;
 
-                    // Check if the button is clicked
-                    if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)
+                    // Stage 1: Choose game mode
+                    if (licznik == 0)
                     {
-                        gameStarted = true;
-                        goto draw;
-						break;
+						if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//gra z botem
+                        {
+                            licznik++;
+                        }
+						else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//gra z graczem
+                        {
+                            licznik++;
+                        }
                     }
-                    else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)
+                    // Stage 2: Choose symbol
+                    else if (licznik == 1)
                     {
-                        gameStarted = true;
-                        goto draw;
-                        break;
+                        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//kolko    
+                        {
+                            licznik++;
+                        }
+						else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//krzyzyk
+                        {
+                            licznik++;
+                        }
                     }
-
-
+                    // Stage 3: Choose board size
+                    else if (licznik == 2)
+                    {
+                        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//3x3
+                        {
+							plansza.setGridSize(3);
+                            gameStarted = true;
+                        }
+                        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//5x5
+                        {
+							plansza.setGridSize(5);
+                            gameStarted = true;
+                        }
+                        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 475 && mouseY <= 525)//10x10
+                        {
+							plansza.setGridSize(10);
+                            gameStarted = true;
+                        }
+                    }
                 }
             }
             else if (gameStarted && gameEnded == 0)
@@ -63,15 +92,14 @@ void Game::run()
                 }
             }
         }
-        draw:
+
         window.clear();
         if (!gameStarted)
         {
-            drawStartGame(window);
+            drawStartGame(window, licznik);
         }
         else
         {
-            window.clear();
             plansza.boardDraw(window);
             if (gameEnded != 0)
             {
@@ -102,12 +130,90 @@ bool Game::isOnBoard(int x, int y)
 
 void Game::handleBotAttack()
 {
-    std::vector<std::tuple<int, int>> attackableTiles = plansza.getAttackableTiles();
-    std::random_shuffle(attackableTiles.begin(), attackableTiles.end());
-    if (attackableTiles.size() > 0)
-    {
-        plansza.attack(std::get<0>(attackableTiles[0]), std::get<1>(attackableTiles[0]), false);
-    }
+        //// Check if the bot can win in the next move
+    //for (int x = 0; x < plansza.gridsize(); x++)
+    //{
+    //    for (int y = 0; y < plansza.gridsize(); y++)
+    //    {
+    //        botCanWin(x, y, 2);
+    //    }
+    //}
+
+
+        //// Take the center if available
+        int center = plansza.gridsize() / 2;
+        if (plansza.getTileStatus(center, center) == 0)
+        {
+            plansza.attack(center, center, false);
+            return;
+        }
+
+        std::vector<std::tuple<int, int>> attackableTiles = plansza.getAttackableTiles();
+        std::random_shuffle(attackableTiles.begin(), attackableTiles.end());
+        if (attackableTiles.size() > 0)
+        {
+            plansza.attack(std::get<0>(attackableTiles[0]), std::get<1>(attackableTiles[0]), false);
+        }
+       
+}
+
+bool Game::botCanWin(int x, int y, int choice)
+{
+	plansza.attack(x, y, choice);
+	if (plansza.WinCheck() == choice)
+	{
+		plansza.clearTile(x, y);
+		return true;
+	}
+	plansza.clearTile(x, y);
+	return false;
+}
+
+//bool Game::playerCanWin(int x, int y, int choice)
+//{
+//    for (int x = 0; x < plansza.gridsize(); x++)
+//    {
+//        for (int y = 0; y < plansza.gridsize(); y++)
+//        {
+//            if (plansza.getTileStatus(x, y) == 0)
+//            {
+//                plansza.attack(x, y, true);
+//                if (plansza.WinCheck() == 1) // Player wins
+//                {
+//                    plansza.attack(x, y, false); // Block player
+//                    return;
+//                }
+//                plansza.clearTile(x, y); // Undo move
+//            }
+//        }
+//    }
+//}
+
+void Game::botTileNextToPlayer(int x, int y, int choice)
+{
+    //ruch bota kolo ruchu gracza
+	if (plansza.getTileStatus(x, y) == 0)
+	{
+		plansza.attack(x, y, choice);
+		return;
+	}
+	else
+	{
+		std::vector<std::pair<int, int>> neighbors = {
+			{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1},
+			{x - 1, y - 1}, {x + 1, y + 1}, {x - 1, y + 1}, {x + 1, y - 1}
+		};
+		for (auto& neighbor : neighbors)
+		{
+			int nx = neighbor.first;
+			int ny = neighbor.second;
+			if (plansza.isOnBoard(nx, ny) && plansza.getTileStatus(nx, ny) == 0)
+			{
+				plansza.attack(nx, ny, choice);
+				return;
+			}
+		}
+	}
 }
 
 void Game::drawEndGame(sf::RenderWindow& window)
@@ -142,7 +248,7 @@ void Game::drawEndGame(sf::RenderWindow& window)
     window.draw(text);
 }
 
-void Game::drawStartGame(sf::RenderWindow& window)
+void Game::drawStartGame(sf::RenderWindow& window, int licznikEkranow)
 {
     sf::Font font;
     if (!font.loadFromFile("arial.ttf")) {
@@ -152,26 +258,80 @@ void Game::drawStartGame(sf::RenderWindow& window)
     text.setFont(font);
     text.setCharacterSize(24);
     text.setFillColor(sf::Color::White);
-    text.setString("Wybierz tryb gry");
-    text.setPosition(205, 185); // Centered in the button
-    window.draw(text);
+
     //narysuj dwa guziki, jeden do gry z botem, drugi do gry z graczem
-    for (int i = 0; i < 2; i++)
+	if (licznikEkranow == 0 || licznikEkranow == 1)
     {
-        sf::RectangleShape button(sf::Vector2f(200, 50));
-        button.setFillColor(sf::Color::Black);
-        button.setOutlineThickness(5);
-        button.setOutlineColor(sf::Color::Red);
-        button.setPosition(200, 275 + i * 100); // Centered in the window
-        window.draw(button);
+        for (int i = 0; i < 2; i++)
+        {
+            sf::RectangleShape button(sf::Vector2f(200, 50));
+            button.setFillColor(sf::Color::Black);
+            button.setOutlineThickness(5);
+            button.setOutlineColor(sf::Color::Red);
+            button.setPosition(200, 275 + i * 100); // Centered in the window
+            window.draw(button);
+        }
     }
+	if (licznikEkranow == 3)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			sf::RectangleShape button(sf::Vector2f(200, 50));
+			button.setFillColor(sf::Color::Black);
+			button.setOutlineThickness(5);
+			button.setOutlineColor(sf::Color::Red);
+			button.setPosition(200, 275 + i * 100); // Centered in the window
+			window.draw(button);
+		}
+	}
     // Draw button text
+	if (licznikEkranow == 0)
+    {
+        text.setString("Wybierz tryb gry");
+        text.setPosition(205, 185); // Centered in the button
+        window.draw(text);
 
-    text.setString("Gra z botem");
-    text.setPosition(225, 285); // Centered in the button
-    window.draw(text);
+        text.setString("Gra z botem");
+        text.setPosition(225, 285); // Centered in the button
+        window.draw(text);
 
-    text.setString("Gra z graczem");
-    text.setPosition(225, 385); // Centered in the button
-    window.draw(text);
+        text.setString("Gra z graczem");
+        text.setPosition(225, 385); // Centered in the button
+        window.draw(text);
+    }
+	else if (licznikEkranow == 1)
+	{
+        text.setString("Wybierz czym chcesz grac");
+        text.setPosition(205, 185); // Centered in the button
+        window.draw(text);
+
+		text.setString("Kólko");
+		text.setPosition(225, 285); // Centered in the button
+		window.draw(text);
+
+		text.setString("Krzyzyk");
+		text.setPosition(225, 385); // Centered in the button
+		window.draw(text);
+	}
+    else if (licznikEkranow == 2)
+    {
+        text.setString("Wybierz rozmiar planszy");
+        text.setPosition(205, 185); // Centered in the button
+        window.draw(text);
+
+        text.setString("3x3");
+        text.setPosition(225, 285); // Centered in the button
+        window.draw(text);
+
+        text.setString("5x5");
+        text.setPosition(225, 385); // Centered in the button
+        window.draw(text);
+
+        text.setString("10x10");
+        text.setPosition(225, 485); // Centered in the button
+        window.draw(text);
+        
+    }
+
+
 }

@@ -78,6 +78,26 @@ int Board::gridsize()
 {
 	return gridSize;
 }	
+int Board::getHowManyToWin()
+{
+	return howManyToWin;
+}
+void Board::clearTile(int x, int y)
+{
+	grid[x][y] = 0;
+}
+
+void Board::setGridSize(int size)
+{
+    gridSize = size;
+    cellSize = (windowSize / gridSize) / 2;
+    grid.clear();
+    grid.resize(gridSize);
+    for (int i = 0; i < gridSize; ++i) {
+        grid[i].resize(gridSize);
+    }
+}
+
 std::vector<std::tuple<int, int>> Board::getAttackableTiles()
 {
 	std::vector<std::tuple<int, int>> attackableTiles;
@@ -93,6 +113,7 @@ std::vector<std::tuple<int, int>> Board::getAttackableTiles()
 	}
 	return attackableTiles;
 }
+
 int Board::WinCheck()
 {
 	for (int i = 0; i < gridSize; ++i)
