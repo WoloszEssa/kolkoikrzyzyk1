@@ -7,6 +7,8 @@ class Game
 	int gameEnded;
 	Board plansza;
 	bool gameStarted;
+	bool pinged;
+	int licznik;
 
 public:
 	void run();
@@ -19,5 +21,7 @@ public:
 	bool botCanWin(int x, int y, int choice);
 	bool playerCanWin(int x, int y, int choice);
 	void botTileNextToPlayer(int x, int y, int choice);
+	void Reset();
+	void handleStartGame(sf::Event& event);
 };
 

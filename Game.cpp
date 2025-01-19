@@ -2,14 +2,25 @@
 
 Game::Game()
 {
+    licznik = 0;
     playerTurn = true;
     gameEnded = 0;
     gameStarted = false;
+	pinged = true;
+}
+
+void Game::Reset()
+{
+	licznik = 0;
+    playerTurn = true;
+    gameEnded = 0;
+    gameStarted = false;
+    pinged = true;
+	plansza.clear();
 }
 
 void Game::run()
 {
-    int licznik = 0;
     sf::RenderWindow window(sf::VideoMode(600, 600), "KolkoKrzyzyk By Mikolaj Wolos", sf::Style::Titlebar | sf::Style::Close);
     while (window.isOpen())
     {
@@ -25,58 +36,15 @@ void Game::run()
             {
                 if (event.type == sf::Event::MouseButtonPressed)
                 {
-                    int mouseX = event.mouseButton.x;
-                    int mouseY = event.mouseButton.y;
-
-                    // Stage 1: Choose game mode
-                    if (licznik == 0)
-                    {
-						if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//gra z botem
-                        {
-                            licznik++;
-                        }
-						else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//gra z graczem
-                        {
-                            licznik++;
-                        }
-                    }
-                    // Stage 2: Choose symbol
-                    else if (licznik == 1)
-                    {
-                        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//kolko    
-                        {
-                            licznik++;
-                        }
-						else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//krzyzyk
-                        {
-                            licznik++;
-                        }
-                    }
-                    // Stage 3: Choose board size
-                    else if (licznik == 2)
-                    {
-                        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//3x3
-                        {
-							plansza.setGridSize(3);
-                            gameStarted = true;
-                        }
-                        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//5x5
-                        {
-							plansza.setGridSize(5);
-                            gameStarted = true;
-                        }
-                        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 475 && mouseY <= 525)//10x10
-                        {
-							plansza.setGridSize(10);
-                            gameStarted = true;
-                        }
-                    }
+					handleStartGame(event);
                 }
             }
             else if (gameStarted && gameEnded == 0)
-            {
+            {  
+                if (pinged) plansza.clearTile(0, 0); pinged = false;
                 if (!playerTurn)
                 {
+                    
                     handleBotAttack();
                     playerTurn = true;
                     gameEnded = plansza.WinCheck();
@@ -91,12 +59,20 @@ void Game::run()
                     }
                 }
             }
+
+            if (gameEnded && event.type == sf::Event::KeyPressed)
+            {
+				Reset();
+				licznik = 0;
+            }
         }
 
         window.clear();
+
         if (!gameStarted)
         {
             drawStartGame(window, licznik);
+            
         }
         else
         {
@@ -189,6 +165,8 @@ bool Game::botCanWin(int x, int y, int choice)
 //    }
 //}
 
+
+
 void Game::botTileNextToPlayer(int x, int y, int choice)
 {
     //ruch bota kolo ruchu gracza
@@ -267,6 +245,7 @@ void Game::drawStartGame(sf::RenderWindow& window, int licznikEkranow)
             sf::RectangleShape button(sf::Vector2f(200, 50));
             button.setFillColor(sf::Color::Black);
             button.setOutlineThickness(5);
+			button.setOrigin(100, 25);
             button.setOutlineColor(sf::Color::Red);
             button.setPosition(200, 275 + i * 100); // Centered in the window
             window.draw(button);
@@ -319,15 +298,15 @@ void Game::drawStartGame(sf::RenderWindow& window, int licznikEkranow)
         text.setPosition(205, 185); // Centered in the button
         window.draw(text);
 
-        text.setString("3x3");
+        text.setString("3x3 - 3 aby wygrac");
         text.setPosition(225, 285); // Centered in the button
         window.draw(text);
 
-        text.setString("5x5");
+        text.setString("5x5 - 4 aby wygrac");
         text.setPosition(225, 385); // Centered in the button
         window.draw(text);
 
-        text.setString("10x10");
+        text.setString("10x10 - 5 aby wygrac");
         text.setPosition(225, 485); // Centered in the button
         window.draw(text);
         
@@ -335,3 +314,58 @@ void Game::drawStartGame(sf::RenderWindow& window, int licznikEkranow)
 
 
 }
+
+void Game::handleStartGame(sf::Event& event)
+{
+    int mouseX = event.mouseButton.x;
+    int mouseY = event.mouseButton.y;
+	//Stage 1: Choose game mode
+    if (licznik == 0)
+    {
+        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//gra z botem
+        {
+            licznik++;
+        }
+        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//gra z graczem
+        {
+            licznik++;
+        }
+    }
+    // Stage 2: Choose symbol
+    else if (licznik == 1)
+    {
+        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//kolko    
+        {
+            licznik++;
+        }
+        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//krzyzyk
+        {
+            licznik++;
+        }
+    }
+    // Stage 3: Choose board size
+    else if (licznik == 2)
+    {
+
+        if (mouseX >= 200 && mouseX <= 400 && mouseY >= 275 && mouseY <= 325)//3x3
+        {
+            plansza.setGrid(3,3);
+            gameStarted = true;
+            plansza.boardPing();
+        }
+        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 375 && mouseY <= 425)//5x5
+        {
+            plansza.setGrid(5,4);
+            gameStarted = true;
+            plansza.boardPing();
+        }
+        else if (mouseX >= 200 && mouseX <= 400 && mouseY >= 475 && mouseY <= 525)//10x10
+        {
+            plansza.setGrid(10,5);
+            gameStarted = true;
+            plansza.boardPing();
+        }
+
+    }
+}
+

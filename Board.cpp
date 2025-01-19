@@ -12,6 +12,20 @@ Board::Board()
 		}
 	}
 }
+void Board::clear()
+{
+	grid.clear();
+	grid.resize(gridSize);
+	for (int i = 0; i < gridSize; ++i)
+	{
+		grid[i].resize(gridSize);
+		for (int j = 0; j < gridSize; ++j)
+		{
+			grid[i][j] = 0;
+		}
+	}
+
+}
 
 void Board::boardDraw(sf::RenderWindow& window)
 {
@@ -38,6 +52,14 @@ void Board::boardDraw(sf::RenderWindow& window)
 				sprite.setTexture(texture);
 				sprite.setPosition(offSet + cellOffset +x * cellSize, offSet + cellOffset + y * cellSize);
 			}
+			else if (grid[x][y] == 11)
+			{
+				texture.loadFromFile("puste.png");
+				sprite.scale(0.007 * cellSize, 0.007 * cellSize);
+				sprite.setTexture(texture);
+				sprite.setPosition(offSet + cellOffset + x * cellSize, offSet + cellOffset + y * cellSize);
+			}
+
            
             window.draw(cell);
 			window.draw(sprite);
@@ -58,6 +80,11 @@ void Board::attack(int x, int y, bool choice)
 			grid[x][y] = 2;
 		}
 	}
+}
+void Board::boardPing()
+{
+	grid[0][0] = 11;
+	
 }
 
 int Board::offset()
@@ -87,15 +114,18 @@ void Board::clearTile(int x, int y)
 	grid[x][y] = 0;
 }
 
-void Board::setGridSize(int size)
+
+void Board::setGrid(int size, int hM)
 {
     gridSize = size;
     cellSize = (windowSize / gridSize) / 2;
+	howManyToWin = hM;
     grid.clear();
     grid.resize(gridSize);
     for (int i = 0; i < gridSize; ++i) {
         grid[i].resize(gridSize);
     }
+
 }
 
 std::vector<std::tuple<int, int>> Board::getAttackableTiles()
@@ -214,6 +244,7 @@ bool Board::checkAround(int x, int y, int choice)
 	}
 	return false;
 }
+
 
 
 

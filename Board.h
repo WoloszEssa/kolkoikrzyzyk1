@@ -4,13 +4,12 @@
 class Board
 {
 	const int windowSize = 800;
-	int gridSize = 10;
-	int cellSize = (windowSize / gridSize)/2;
+	int gridSize;
+	int cellSize;
 	const int offSet = 100;
-	const int howManyToWin = 5;
-	static const sf::Color BLACK;
-	
+	int howManyToWin;	
 	std::vector<std::vector<int>> grid;
+
 public:
 	void boardDraw(sf::RenderWindow& window);
 	Board();
@@ -26,7 +25,9 @@ public:
 	bool isOnBoard(int x, int y);
 	int getHowManyToWin();
 	void clearTile(int x, int y);
-	void setGridSize(int size);
+	void setGrid(int size, int hM);
+	void boardPing();
+	void clear();
 
 	
 };
